@@ -1,4 +1,5 @@
 # 📌 UUID(Universally Unique Identifier) 정리
+> 작성 날짜: 2025/03/28
 
 ---
 

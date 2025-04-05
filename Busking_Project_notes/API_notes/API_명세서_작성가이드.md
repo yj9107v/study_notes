@@ -143,7 +143,7 @@ User 테이블에 어떤 기능(API)이 필요한지 먼저 생각하기.
 | Content-Type | application/json |
 | Authorization | Bearer <JWT 토큰> |
 
-※ Bearer <JWT> 가 무엇인지 → 별도 정리 필요
+※ [Bearer <JWT> 설명](실전_고민&질문_정리/Bearer_JWT_설명.md)
 
 ### 📌 5. 요청 Body
 

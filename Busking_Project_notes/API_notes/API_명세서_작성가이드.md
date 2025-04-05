@@ -113,7 +113,7 @@ User 테이블에 어떤 기능(API)이 필요한지 먼저 생각하기.
 | 🧩 구상 | 도메인 + 경로 → https://example.com/api/users/signup |
 | 💡 규칙 | RESTful 하게: 리소스(명사)/동작 순으로 쓰는 게 일반적 |
 
-※ RESTful하게가 무엇인지 → 경로 설명 추가 필요
+※ [RESTful하게가 무엇인지](실전_고민&질문_정리/RESTful_API_설계가이드.md)
 
 ### 📌 3. HTTP 메서드
 
@@ -143,7 +143,7 @@ User 테이블에 어떤 기능(API)이 필요한지 먼저 생각하기.
 | Content-Type | application/json |
 | Authorization | Bearer <JWT 토큰> |
 
-※ [Bearer <JWT> 설명](실전_고민&질문_정리/Bearer_JWT_설명.md)
+※ [Bearer <JWT 토큰>이 무엇인지](실전_고민&질문_정리/Bearer_JWT_설명.md)
 
 ### 📌 5. 요청 Body
 

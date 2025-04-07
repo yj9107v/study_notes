@@ -65,3 +65,9 @@
 ## ✨ 추가 팁
 - Refresh Token은 DB에 저장하거나 성능을 고려하면 Redis에 관리해서 발급 시점과 일치하는지 검증하는 방식도 많이 사용.
 
+  ---
+
+> References
+- ChatGPT Plus
+
+

@@ -61,3 +61,9 @@ Authorization: Bearer <JWT>
 ```
 
 이게 바로 **JWT 기반 인증 방식의 핵심**입니다.
+
+---
+
+> References
+- ChatGPT Plus
+

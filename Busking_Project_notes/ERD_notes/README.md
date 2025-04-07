@@ -1,1 +1,6 @@
 # "ERD 설계를 하며 공부한 내용"
+
+---
+
+> References
+- ChatGPT Plus

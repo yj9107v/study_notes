@@ -6,7 +6,7 @@
 
 ## 📸 0. 썸네일
 
-![alt text](docs/Image/Thumbnail.png)
+![alt text](Image/Thumbnail.png)
 
 ---
 
@@ -215,7 +215,7 @@
 
 ## 📑 7. API 명세서
 
-![alt text](docs/Image/API.png)
+![alt text](Image/API.png)
 
 ---
 
@@ -254,7 +254,7 @@
 📄 [ERD 구조 보기 (PDF)](docs/erd)  
 또는 아래 이미지 참조 👇
 
-![ERD 다이어그램](docs/Image/Busking_Project_ERD.png)
+![ERD 다이어그램](Image/Busking_Project_ERD.png)
 
 
 ---

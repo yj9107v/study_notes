@@ -57,7 +57,6 @@
 - Spring Security, JPA
 - MySQL (AWS RDS)
 - JWT 기반 인증
-- Swagger
 
 ### Frontend
 - React
@@ -66,7 +65,7 @@
 
 ### 기타
 - Kakao Maps API
-- AWS EB (배포), aws RDS (DB)
+- AWS EB (배포), AWS RDS (DB)
 
 ---
 

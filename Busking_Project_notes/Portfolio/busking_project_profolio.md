@@ -251,9 +251,6 @@
 
 ## 🧭 9. ERD
 
-📄 [ERD 구조 보기 (PDF)](docs/erd)  
-또는 아래 이미지 참조 👇
-
 ![ERD 다이어그램](Image/Busking_Project_ERD.png)
 
 

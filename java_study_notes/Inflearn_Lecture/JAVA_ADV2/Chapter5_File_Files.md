@@ -105,3 +105,52 @@ try (Stream<String> lineStream = Files.lines(path, UTF_8)) {
 ---
 
 ## ✅ 파일 복사 최적화
+
+#### 🔍 파일 복사 예제 1
+- 파일 복사하는 효율적인 방법을 알아본다.
+- 200MB 임시 파일을 하나 만들어뒀다. (temp/copy.dat -> 200MB)
+```java
+FileInputStream fis = new FileInputStream("temp/copy.dat");
+FileOutputStream fos = new FileOutputStream("temp/copy_new.dat");
+
+byte[] bytes = fis.readAllBytes();
+fos.write(bytes);
+fis.close();
+fos.close();
+```
+- 시간은 약 109ms 걸렸다.
+- `FileInputStream`에서 `readAllBytes`를 통해 한 번에 모든 데이터를 읽고 `write(bytes)`를 통해 한 번에 모든 데이터를 저장한다.
+- 파일(copy.dat) -> 자바(byte) -> 파일(copy_new.dat)의 과정을 거친다.
+- 자바가 `copy.dat` 파일의 데이터를 자바 프로세스가 사용하는 메모리에 불러온다.
+  - 그리고 메모리에 있는 데이터를 `copy_new.dat`에 전달한다.
+
+#### 🔍 파일 복사 예제 2
+```java
+fis.transferTo(fos);
+```
+- 시간은 약 70ms 걸렸다.
+- `InputStream`에는 `transferTo()`라는 특별한 메서드가 있다.
+- 이 메서드는 `InputStream`에서 읽은 데이터를 바로 `OutputStream`으로 출력한다.
+- `transferTo()`는 성능 최적화가 되어 있기 때문에, 앞의 예제와 비슷하거나 조금 더 빠르다.
+  - 상황에 따라 조금 느릴 수도 있다.
+  - 참고로 디스크는 실행 시 시가느이 편차가 심하다는 점을 알아두자.
+- 파일(copy.dat) -> 자바(byte) -> 파일(copy_new.dat)의 과정을 거친다.
+- `transferTo()` 덕분에 매우 편리하게 `InputStream`의 내용을 `OutputStream`으로 전달할 수 있었다.
+
+#### 🔍 파일 복사 예제 3
+```java
+Path source = Path.of("temp/copy.dat");
+Path target = Path.of("temp/copy_new.dat");
+Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+```
+- 시간은 약 37ms 걸렸다.
+- 앞의 예제들은 파일을 복사할 때, 파일의 데이터를 자바로 불러오고 또 자바에서 읽은 데이터를 다시 파일에 전달해야 한다.
+- `Files.copy()`는 자바에 파일에 데이터를 불러오지 않고, 운영체제의 파일 복사 기능을 사용한다.
+- 따라서 다음과 같이 중간 과정이 생략된다.
+  - 파일(copy.dat) -> 파일(copy_new.dat)
+
+- 따라서 가장 빠르다. 파일을 다루어야 할 일이 있다면 항상 `Files`의 기능을 먼저 찾아보자.
+- 물론 이 기능은 파일에서 파일을 복사할 때만 유용하다.
+  - 만약 파일의 정보를 읽어서 처리해야 하거나, 스트림을 통해 네트워크에 전달해야 한다면 앞서 설명한 스트림을 직접 사용해야 한다.
+
+---

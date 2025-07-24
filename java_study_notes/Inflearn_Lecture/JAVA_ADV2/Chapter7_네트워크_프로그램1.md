@@ -249,3 +249,104 @@ while (true) {
 ---
 
 ## ✅ 네트워크 프로그램 3
+- 이번에는 여러 클라이언트가 동시에 접속할 수 있는 서버 프로그램을 작성해 보자.
+
+
+- 서버의 `main` 스레드는 서버 소켓을 생성하고, 서버 소켓의 `accept()`를 반복해서 호출해야 한다.
+- 클라이언트가 서버에 접속하면 서버 소켓의 `accpet()` 메서드가 `Socket`을 반환한다.
+- `main` 스레드는 이 정보를 기반으로 `Runnable`을 구현한 `Session`이라는 별도의 객체를 만들고, 새로운 스레드에서 이 객체를 실행한다.
+  - 여기서는 `Thread-0`이 `Session`을 실행한다.
+- `Session` 객체와 `Thread-0`은 연결된 클라이언트와 메시지를 주고받는다.
+- 새로운 TCP 연결이 발생하면 `main` 스레드는 새로운 `Session` 객체를 별도의 스레드에서 실행한다. 그리고 이 과정을 반복한다.
+
+#### 🔍 역할의 분리
+- `main` 스레드
+  - `main` 스레드는 새로운 연결이 있을 때마다 `Session` 객체와 별도의 스레드를 생성하고, 별도의 스레드가 `Session` 객체를 실행하도록 한다.
+- `Session` 담당 스레드
+  - `Session`을 담당하는 스레드는 자신의 소켓이 연결된 클라이언트와 메시지를 반복해서 주고받는 역할을 담당.
+
+```java
+public class SessionV3 implements Runnable {
+    private final Socket socket;
+    
+    public SessionV3(Socket socket) {
+        this.socket = socket;
+    }
+    
+    @Override
+    public void run() {
+        try {
+            DataInputStream input = new DataInputStream(socket.getInputStream());
+            DataOutputStream output = new DataOutputStream(socket.getOutputStream());
+            
+            while (true) {
+                String received = input.readUTF(); // 블로킹
+              
+                if (received.equals("exit")) break;
+                
+                String toSend = received + " World!";
+                output.writeUTF(toSend);
+            }
+            
+            // 자원 정리
+            input.close();
+            output.close();
+            socket.close();
+        } catch (IOException e) {
+            throw new RunTimeException(e);
+        }
+}
+```
+- `Runnable`을 구현해서 별도의 스레드에서 실행한다.
+
+```java
+public class ServerV3 {
+    private static final int PORT = 12345;
+
+  public static void main(String[] args) throws IOException {
+      ServerSocket serverSocket = new ServerSocket(PORT);
+      
+      while (true) {
+        Socket socket = serverSocket.accept(); // 블로킹
+        
+        SessionV3 session = new SessionV3(socket);
+        Thread thread = new Thread(session);
+        thread.start(); // session의 run() 호출
+      }
+  }
+}
+```
+- `main` 스레드는 서버 소켓을 생성하고, `serverSocket.accept()`을 호출해서 연결을 대기한다.
+- 새로운 연결이 추가될 때마다 `Session` 객체를 생성하고 별도의 스레드에서 `Session` 객체를 실행한다.
+- 이 과정을 반복.
+
+
+- **블로킹되는 부분은 이렇게 별도의 스레드로 나누어 실행해야 한다.**
+
+#### 🤔 문제
+- **여기서 실행 중인 클라이언트를 인텔리J의 빨간색 Stop 버튼을 눌러서 직접 종료할 시?**
+- 클라이언트의 연결을 직접 종료하면 클라이언트 프로세스가 종료되면서, 클라이언트와 서버의 TCP 연결도 함께 종료된다.
+  - 이때 서버에서 `readUTF()`로 클라이언트가 메시지를 읽으려고 하면 `EOFException`이 발생.
+  - 소켓의 TCP 연결이 종료되었기 때문에 더는 읽을 수 있는 메시지가 없다는 뜻이다.
+  - EOF(파일의 끝)가 여기서는 전송의 끝이라는 뜻이다.
+- **그런데 여기서 심각한 문제가 하나 있다. 이렇게 예외가 발생해 버리면 서버에서 자원 정리 코드를 호출하지 못한다는 점이다.**
+
+#### 🔍 윈도우 OS 내용 추가
+- **클라이언트를 직접 종료한 경우 서버 로그 - 윈도우**
+- 참고로 윈도우의 경우 `java.io.EOFException`이 아니라 `java.net.SocketException: Connection reset`이 발생한다.
+- 클라이언트의 연결을 직접 종료하면 클라이언트 프로세스가 종료되면서, 클라이언트와 서버의 TCP 연결도 함께 종료된다.
+  - 이때 소켓을 정상적으로 닫지 않고 프로그램을 종료했기 때문에 각각의 OS는 남아있는 TCP 연결을 정리하려고 시도한다.
+  - 이때 MAC과 윈도우 OS의 TCP 연결 정리 방식이 다르다.
+    - MAC: TCP 연결 정상 종료
+    - 윈도우: TCP 연결 강제 종료
+
+
+- 자바 객체는 GC가 되지만, 자바 외부의 자원은 자동으로 GC가 되는 게 아니다. 따라서 꼭! 정리를 해주어야 한다.
+- (TCP 연결의 경우 운영체제가 어느 정도 연결을 정리해 주지만, 직접 연결을 종료할 때보다 더 많은 시간이 걸릴 수 있다.)
+
+
+#### ❗ 자원 정리를 제대로 해주어야 한다.
+
+---
+
+## ✅ 자원 정리 1

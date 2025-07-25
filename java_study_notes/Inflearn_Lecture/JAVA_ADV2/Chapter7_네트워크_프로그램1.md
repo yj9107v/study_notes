@@ -349,4 +349,224 @@ public class ServerV3 {
 
 ---
 
-## ✅ 자원 정리 1
+## ✅ 자원 정리
+### 📚 자원 정리 1
+- `call()`: 정상 로직 호출
+- `callEx()`: 비정상 로직 호출 `CallException`을 던진다.
+- `close()`: 정상 종료
+- `closeEx()`: 비정상 종료, `CloseException`을 던진다.
+
+```java
+public class ResourceCloseMainV1 {
+  public static void main(String[] args) {
+      try {
+          logic();
+      } catch (CallException e) {
+          e.printStackTrace();
+      } catch (CloseException e) {
+          e.printStackTrace();
+      }
+  }
+  
+  private static void logic() throws CallException, CloseException {
+      ResourceV1 resource1 = new ResourceV1("resource1");
+      ResourceV1 resource2 = new ResourceV2("resource2");
+      
+      resource1.call();
+      resource2.callEx(); // CallException
+    
+      // 호출 안 됨
+      resource2.closeEx();
+      resource1.closeEx();
+  }
+}
+```
+- 서로 관련된 자원은 나중에 생성한 자원을 먼저 정리해야 한다.
+- 예를 들어서 `resouce1`을 생성하고, `resource1`의 정보를 활용해서 `resource2`를 생성한다면, 닫을 때는 그 반대인 `resource2`를 먼저 닫고, 그다음에 `resource1`을 닫아야 한다.
+  - 왜냐하면 `resource2`의 입장에서 `resource1`의 정보를 아직 참고하고 있기 때문이다.
+
+#### 🤔 문제
+- `callEx()`를 호출하면서 예외가 발생했다.
+  - 예외 때문에 자원 정리 코드가 정상 호출되지 않았다.
+- 이 코드는 예외가 발생하면 자원이 정리되지 않는다는 문제가 있다.
+
+---
+
+### 📚 자원 정리 2
+- 이번에는 예외가 발생해도 자원을 정리하도록 해본다.
+
+```java
+private static void logic() throws CallException, CloseException {
+    ResourceV1 resource1 = null;
+    ResourceV1 resource2 = null;
+    
+    try {
+        resource1 = new ResourceV1("resource1");
+        resource1 = new ResourceV2("resource2");
+        
+        resource1.call();
+        resource2.callEx();
+    } catch (CallException e) {
+        throw e; // CallException 다시 던짐
+    } finally {
+        if (resource2 != null) resource2.closeEx(); // CloseException 발생!
+        if (resource1 != null) resource1.closeEx(); // 이 코드 호출 안 됨!
+    }
+}
+```
+#### 🔍 null 체크
+- 이번에는 `finally` 코드 블록을 사용해서 자원을 닫는 코드가 항상 호출되도록 했다.
+- 만약 `resource2` 객체를 생성하기 전에 예외가 발생하면 `resource2`는 `null`이 된다.
+  - 따라서 `null` 체크를 해야 한다.
+- `resource1`의 경우에도 `resource1`을 생성하는 중에 예외가 발생하면 `null` 체크가 필요하다.
+
+#### 🔍 자원 정리 중에 예외가 발생하는 문제
+- `finally` 코드 블록은 항상 호출되기 때문에 자원이 잘 정리될 것 같지만, 이번에는 자원을 정리하는 중에 `finally` 코드 블록 안에서 `resource2.closeEx()`를 호출하면서 예외가 발생한다.
+- 결과적으로 `resource1.closeEx`는 호출되지 않는다.
+
+#### ⚠️ 핵심 예외가 바뀌는 문제
+- 이 코드에서 발생한 핵심적인 예외는 `CallException`이다. 이 예외 때문에 문제가 된 것이다.
+  - 그런데 `finally` 코드 블록에서 자원을 정리하면서 `CloseException` 예외가 추가로 발생했다.
+  - 예외 때문에 자원을 정리하고 있는데, 자원 정리 중에 또 예외가 발생한 것이다.
+  - 이 경우 `logic()`을 호출한 쪽에서는 핵심 예외인 `CallException`이 아니라 `finally` 블록에서 새로 생성된 `CloseException`을 받게 된다.
+    - 핵심 예외가 사라진 것이다!
+- 개발자가 원하는 예외는 당연히 핵심 예외다.
+  - 이 핵심 예외를 확인해야 제대로 된 문제를 찾을 수 있다.
+  - 자원을 닫는 중에 발생한 예외는 부가 예외일 뿐이다.
+
+#### 🤔 문제
+- `close()` 시점에 실수로 예외를 던지면, 이후 다른 자원을 닫을 수 없는 문제 발생
+- `finally()` 블록 안에서 자원을 닫을 때 예외가 발생하면, 핵심 예외가 `finally`에서 발생한 부가 예외로 바뀌어 버린다.
+  - 그리고 핵심 예외가 사라진다.
+
+---
+
+### 📚 자원 정리 3
+- 자원 정리의 코드에서 try-catch를 사용해서 자원 정리 중에 발생하는 예외를 잡아보자.
+
+```java
+finally {
+    if (resource2 != null) {
+        try {
+            resource2.closeEx();
+        } catch (CloseException e) {
+            // close()에서 발생한 예외는 버린다. 필요하면 로깅 정도
+            System.out.println("close ex: " + e);
+        }
+    }
+    if (resource1 != null) {
+        try {
+            resource1.closeEx();
+        } catch (CloseException e) {
+            System.out.println("close ex: " + e);
+        }
+    }
+}
+```
+- `finally` 블록에서 각각의 자원을 닫을 때도, 예외가 발생하면 예외를 잡아서 처리하도록 했다.
+- 자원 정리 시점에 발생한 예외를 잡아서 처리했기 때문에, 자원 정리 시점에 발생한 부가 예외가 핵심 예외를 가리지 않는다.
+- 자원 정리 시점에 발생한 예외는 당장 더 처리할 수 있는 부분이 없다.
+  - 이 경우 로그를 남겨서 개발자가 인지할 수 있게 하는 정도면 충분하다.
+
+#### 🤔 문제
+- 이전에 발생했던 2가지 문제를 해결했다.
+- 핵심적인 문제들은 해결되었지만 코드 부분에서 보면 아쉬운 부분이 많다.
+  - `resource` 변수를 선언하면서 동시에 할당할 수 없음(`try`, `finally` 코드 블록과 변수 스코프가 다른 문제)
+  - `catch` 이후에 `finally` 호출, 자원 정리가 조금 늦어진다.
+  - 개발자가 실수로 `close()`를 호출하지 않을 가능성
+  - 개발자가 `close()` 호출 순서를 실수, 보통 자원을 생성한 순서와 반대로 닫아야 함.
+
+- 지금까지 수많은 자바 개발자들이 자원 정리 때문에 고통받아 왔다.
+- **이런 문제를 한 번에 해결하는 것이 바로 `try-with-resources` 구문이다.**
+
+---
+
+### 📚 자원 정리 4
+```java
+// try-with-resources를 써서 자동 자원 반납을 하려면 AutoCloseable을 구현해 줘야 한다.
+public class ResourceV2 implements AutoCloseable {
+    @Override
+    public void close() throws CloseException {
+        System.out.println(name + " close");
+        throw new CloseException(name + " ex");
+    }
+}
+```
+- `AutoCloseable`을 구현했다.
+- `close()`는 항상 `CloseException`을 던지도록 했다.
+
+```java
+public class ResourceCloseMainV4 {
+  public static void main(String[] args) {
+    try {
+        logic();
+    } catch (CallException e) {
+        Throwable[] suppressed = e.getSuppressed();
+        for (Throwable throwable : suppressed) {
+            System.out.println("suppressedEx = " + throwable);
+        }
+        e.printStackTrace();
+    } catch (CloseException e) {
+        e.printStackTrace();
+    }
+  }
+  
+  private static void logic() throws CallException, CloseException {
+      try (ResourceV2 resource1 = new ResourceV2("resource1");
+           ResourceV2 resource2 = new ResourceV2("resource2")) {
+          
+          resource1.call();
+          resource2.callEx(); // CallException;
+      } catch (CallException e) {
+          System.out.println("ex: " + e);
+          throw e;
+      }
+  }
+}
+```
+- `try-with-resources`는 단순하게 `close()`를 자동 호출해 준다는 정도의 기능만 제공하는 것이 아니다.
+- 고민한 6가지 문제를 모두 해결하는 장치이다.
+
+#### 🤔 2가지 핵심 문제
+- `close()` 시점에 실수로 예외를 던지면, 이후에 다른 자원을 닫을 수 없는 문제 발생
+- `finally()` 블록 안에서 자원을 닫을 때 예외가 발생하면, 핵심 예외가 `finally`에서 발생한 부가 예외로 바뀌어 버린다.
+  - 그리고 핵심 예외가 사라진다.
+
+#### 🤔 4가지 부가 문제
+- `resource` 변수를 선언하면서 동시에 할당할 수 없음(`try`, `finally` 코드 블록과 변수 스코프가 다른 문제)
+- `catch` 이후에 `finally` 호출, 자원 정리가 조금 늦어진다.
+- 개발자가 실수로 `close()`를 호출하지 않을 가능성
+- 개발자가 `close()` 호출 순서를 실수, 보통 자원을 생성한 순서와 반대로 닫아야 함.
+
+#### 🔍 Try with resources 장점
+1. **리소스 누수 방지**
+  - 모든 리소스가 제대로 닫히도록 보장한다.
+    - 실수로 `finally` 블록을 적지 않거나, `finally` 블록 안에서 자원 해제 코드를 누락하는 문제들을 예방할 수 있다.
+
+2. **코드 간결성 및 가독성 향상**
+  - 명시적인 `close()` 호출이 필요 없어 코드가 더 간결하고 읽기 쉬워진다.
+
+3. **스코프 범위 한정**
+  - 예를 들어 리소스로 사용되는 `resource1, 2` 변수의 스코프가 `try` 블록 안으로 한정된다.
+    - 따라서 코드 유지보수가 더 쉬워진다.
+
+4. **조금 더 빠른 자원 해제**
+  - 기존에는 try -> catch -> finally로 catch 이후에 자원을 반납했다.
+    - Try with resources 구분은 `try` 블록이 끝나면 즉시 `close()`를 호출한다.
+
+5. **자원 정리 순서**
+  - 먼저 선언한 자원을 나중에 정리한다.
+
+6. **부가 예외 포함**
+
+#### 🔍 Try with resources 예외 처리와 부가 예외 포함
+- `try-with-resources`를 사용하는 중에 핵심 로직 예외와 자원을 정리하는 중에 발생하는 부가 예외가 모두 발생하면 어떻게 될까?
+  - `try-with-resources`는 핵심 예외를 반환한다.
+  - 부가 예외는 핵심 예외 안에 `Suppressed`로 담아서 반환한다.
+  - 개발자는 자원 정리 중에 발생한 부가 예외를 `e.getSuppressed()`를 통해 활용할 수 있다.
+- **`try-with-resources`를 사용하면 핵심 예외를 반환하면서, 동시에 부가 예외도 필요하면 확인할 수 있다.**
+
+
+- 참고로 자바 예외에는 `e.addSuppressed(ex)`라는 메서드가 있어서 예외 안에 참고할 예외를 담아둘 수 있다.
+
+---

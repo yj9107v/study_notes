@@ -237,3 +237,158 @@ Thread.sleep(1000);
 ---
 
 ## ✅ 네트워크 예외 1 - 연결 예외
+- 네트워크 연결 시 발생할 수 있는 예외들을 정리.
+
+```java
+public class ConnectMain {
+    
+    private static void unknownHostEx1() throws IOException {
+        try {
+            Socket socket = new Socket("999.999.999.999", 80);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void unknownHostEx2() throws IOException {
+        try {
+            Socket socket = new Socket("google.gogo", 80);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void connectionRefused() throws IOException {
+        try {
+          Socket socket = new Socket("localhost", 45678); // 미사용 포트
+        } catch (ConnectException e) {
+            // ConnectException: Connection refused
+            e.printStackTrace();
+        }
+}
+```
+
+#### 🔍 java.net.UnknownHostException
+- 호스트를 알 수 없음.
+- `999.999.999.999`: 이런 IP는 존재하지 않는다.
+- `google.gogo`: 이런 도메인 이름은 존재하지 않는다.
+
+#### 🔍 java.net.ConnectException: Connection refused
+- `Connection refused` 메시지는 연결이 거절되었다는 뜻이다.
+- 연결이 거절되었다는 뜻은, 우선은 네트워크를 통해 해당 IP의 서버 컴퓨터에 접속은 했다는 뜻.
+- 하지만 서버 컴퓨터가 45678 포트를 사용하지 않기 때문에 TCP 연결을 거절한다.
+- IP에 해당하는 서버는 켜져 있지만, 사용하는 PORT가 없을 때 주로 발생.
+- 네트워크 방화벽 등에서 무단 연결로 인지하고 연결을 막을 때도 발생한다.
+- 서버 컴퓨터의 OS는 이때 TCP RST(Reset)라는 패킷을 보내서 연결을 거절한다.
+- 클라이언트가 연결 시도 중에 RST 패킷을 받으면 이 예외가 발생한다.
+
+#### 🔍 TCP RST(Reset) 패킷
+- TCP 연결에 문제가 있다는 뜻. 이 패킷을 받으면 받은 대상은 바로 연결을 해제해야 한다.
+
+---
+
+# ⭐⭐ 매우 중요❗
+## ✅ 네트워크 예외 2 - 타임아웃
+- 네트워크 연결을 시도해서 서버 IP에 연결 패킷을 전달했지만 응답이 없는 경우 어떻게 될까?
+
+### 📚 TCP 연결 타임아웃 - OS 기본
+```java
+public class ConnectTimeoutMain1 {
+  public static void main(String[] args) {
+    try {
+        Socket socket = new Socket("192.168.1.250". 45678);
+    } catch (ConnectException e) {
+        e.printStackTrace();
+    }
+  }
+}
+```
+- 사설 IP 대역(주로 공유기에서 사용하는 IP 대역)의 `192.168.1.250`을 사용했다.
+- 해당 IP로 연결 패킷을 보내지만 IP를 사용하는 서버가 없으므로 TCP 응답이 오지 않는다.
+- 또는 해당 IP로 연결 패킷을 보내지만 해당 서버가 너무 바쁘거나 문제가 있어서 연결 응답 패킷을 보내지 못하는 경우도 있다.
+- 그렇다면 이때 무한정 기다려야 할까?
+
+#### 🔍 OS 기본 대기 시간
+- TCP 연결을 시도했는데 연결 응답이 없다면 OS에는 연결 대기 타임아웃이 설정되어 있다.
+  - Windows: 약 21초
+  - Linux: 약 75초에서 180초 사이
+  - mac test 75초
+- 해당 시간이 지나면 `java.net.ConnectException: Operation timed out`이 발생한다.
+  - 윈도우의 경우 `java.net.ConnectException: Connection timed out: connect`가 발생, 예외는 같고, 오류 메시지가 다르다.
+
+
+- TCP 연결을 클라이언트가 이렇게 오래 대기하는 것은 좋은 방법이 아니다.
+- 연결이 안 되면 고객에게 빠르게 현재 연결에 문제가 있다고 알려주는 것이 더 나은 방법이다.
+
+### 📚 TCP 연결 타임아웃 - 직접 설정
+```java
+public class ConnectTimeoutMain2 {
+  public static void main(String[] args) {
+    try {
+        Socket socket = new Socket();
+        socket.connect(new InetSocketAddress("192.168.1.250", 45678), 1000);
+    } catch (ConnectException e) {
+        e.printStackTrace();
+    }
+  }
+}
+```
+#### 🔍 new Socket()
+- `Socket` 객체를 생성할 때 인자로 IP, PORT를 모두 전달하면 생성자에서 바로 TCP 연결을 시도한다.
+- 하지만 IP, PORT를 모두 빼고 객체를 생성하면, 객체만 생성되고, 아직 연결은 시도하지 않는다.
+- 추가적으로 필요한 설정을 더 한 다음에 `socket.connect()`를 호출하면 그때 TCP 연결을 시도한다.
+- 이 방식을 사용하면 추가적인 설정을 더 할 수 있는데, 대표적으로 **타임아웃**을 설정할 수 있다.
+- `InetSocketAddress`: `SocketAddress`의 자식이다. IP, PORT 기반의 주소를 객체로 제공한다.
+- `timeout`: 밀리초 단위로 연결 타임아웃을 지정할 수 있다.
+  - 위 코드를 실행해 보면 설정한 시간인 1초가 지난 후 타임아웃 예외가 발생하는 것을 확인할 수 있다.
+
+### 📚 TCP 소켓 타임아웃 - read 타임아웃
+- 타임아웃 중에 또 하나 중요한 타임아웃이 있다.
+- 바로 **소켓 타임아웃** 또는 **read 타임아웃**이라고 부르는 타임아웃이다.
+
+
+- 앞에서 설명한 연결 타임아웃은 TCP 연결과 관련이 되어있다.
+- 연결이 잘 된 이후에 클라이언트가 서버에 어떤 요청을 했다고 가정하자. 그런데 서버가 계속 응답을 주지 않는다면, 무한정 기다려야 할까?
+- 서버에 사용자가 폭주하고 매우 느려져서 응답을 계속 주지 못하는 상황이라면 어떻게 해야 할까?
+- **이런 경우에 사용하는 것이 바로 소켓 타임아웃(read 타임아웃)이다.**
+
+```java
+public class SoTimeoutServer {
+  public static void main(String[] args) throws IOException, InterruptedException {
+    ServerSocket serverSocket = new ServerSocket(12345);
+    Socket socket = serverSocket.accept();
+    
+    Thread.sleep(1000000);
+  }
+}
+```
+- 서버는 소켓을 연결은 하지만, 아무런 응답을 주지 않는다.
+
+```java
+public class SoTimeoutClient {
+  public static void main(String[] args) throws IOException, InterruptedException {
+    Socket socket = new Socket("localhost", 12345);
+    InputStream input = socket.getInputStream();
+    try {
+        socket.setSoTimeout(3000); // 타임아웃 시간 설정
+        int read = input.read();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    
+    socket.close();
+  }
+}
+```
+- `socket.setSoTimeout()`을 사용하면 밀리초 단위로 타임아웃 시간을 설정할 수 있다.
+- 지정한 시간이 지나면 다음 예외가 발생한다.
+  - `java.net.SocketTimeoutException: Read timed out`
+- 타임아웃 시간을 설정하지 않으면 `read()`는 응답이 올 때까지 무한 대기한다.
+
+#### 🤔 실무 이야기
+- 실무에서 자주 발생하는 장애 원인 중 하나가 바로 연결 타임아웃, 소켓 타임아웃(read 타임아웃)을 누락하기 때문에 발생한다.
+- **외부 서버와 통신을 하는 경우 반드시 연결 타임아웃과 소켓 타임아웃을 지정하자.**
+
+---
+
+## ✅ 네트워크 예외 3 - 정상 종료

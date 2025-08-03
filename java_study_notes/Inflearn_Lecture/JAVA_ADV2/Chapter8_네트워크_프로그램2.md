@@ -91,7 +91,7 @@ public class SessionV6 implements Runnable {
     private final DataInputStream input;
     private final DataOutputStream output;
     private final SessionManagerV6 sessionManager;
-    private final boolean closed = false;
+    private boolean closed = false;
     
     public SessionV6 (Socket socket, SessionManagerV6 sessionManger) throws IOException {
         this.socket = socket;

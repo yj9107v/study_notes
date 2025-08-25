@@ -563,3 +563,179 @@ public class HomeServlet implements HttpServlet {
 ### 📚 공용 서블릿
 - `NotFoundServlet`, `InternalErrorServlet`, `DiscardServlet`은 여러 프로젝트에서 공용으로 사용하는 서블릿이다.
   - 따라서 위 개별 서비스 서블릿과 패키지를 분리한다.
+
+
+- `HttpServlet`을 관리하고 실행하는 `ServletManager` 클래스도 만들자.
+```java
+public class ServletManager {
+    private final Map<String ,HttpServlet> servletMap = new HashMap<>();
+    private HttpServlet defaultServlet;
+    private HttpServlet notFoundErrorServlet = new NotFouundServlet();
+    private HttpServlet internalErrorServlet = new InternalErrorServlet();
+    
+    public ServletManager() {}
+  
+    public void add(String path, HttpServlet servlet) {
+        servletMap.put(path, servlet);
+    }
+    
+    public void setDefaultServlet(HttpServlet defaultServlet) {
+        this.defaultServlet = defaultServlet;
+    }
+    
+    public void setNotFoundErrorServlet(HttpServlet notFoundErrorServlet) {
+        this.notFoundErrorServlet = notFoundErrorServlet;
+    }
+    
+    public void setInternalErrorServlet(HttpServlet internalErrorServlet) {
+        this.internalErrorServlet = internalErrorServlet;
+    }
+    
+    public void execute(HttpRequest request, HttpResponse response) throws IOException {
+        try {
+            HttpServlet servlet = servletMap.getOrDefault(request.getPath(), defaultServlet);
+            if (servlet == null) {
+                throw new PageNotFoundException("request url= " + request.getPath());
+            }
+            servlet.service(request, response);
+        } catch (PageNotFoundException e) {
+            e.printStackTrace();
+            notFoundErrorServlet.service(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            internalErrorServlet.service(request, response);
+        }
+    }
+} 
+```
+#### 🔍 servletMap
+- `key=value` 형식으로 구성되어 있다. URL의 요청 경로가 Key이다.
+- **defaultServlet**: `HttpServlet`을 찾지 못할 때 기본으로 실행된다.
+- **notFoundErrorServlet**: `PageNotFoundException`이 발생할 때 실행된다.
+  - URL 요청 경로를 `servletMap`에서 찾을 수 없고, `defaultServlet`도 없는 경우 `PageNotFoundException`을 던진다.
+- **internalErrorServlet**: 처리할 수 없는 예외가 발생하는 경우 실행된다.
+
+```java
+public class HttpRequestHandler implements Runnable {
+    private final Socket socket;
+    private final ServletManager servletManager;
+    
+    public HttpRequestHandler(Socket socket, ServletManager servletManager) {
+        this.socket = socket;
+        this.servletManager = servletManager;
+    }
+    
+    @Override
+    public void run() {
+        try {
+            process(socket);
+        } catch (Exception e) {
+            log(e);
+            e.printStackTrace();
+        }
+    }
+    
+    private void process(Socket socket) throws IOException {
+        try (socket;
+             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), UTF_8));
+             PrintWriter writer = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), false, UTF_8))) {
+            
+            HttpRequest request = new HttpRequest(reader);
+            HttpResponse response = new HttpResponse(writer);
+            
+            servletManager.execute(request, response);
+            response.flush();
+        }
+    }
+}
+```
+- `HttpRequest`, `HttpResponse`를 만들고, `servletManager`에 전달하면 된다.
+
+```java
+public class HttpServer {
+    
+    private final ExecutorService es = Executors.newFixedThreadPool(10);
+    private final int port;
+    private final ServletManager servletManager;
+    
+    public HttpServer(int port, ServletManager servletManager) {
+        this.port = port;
+        this.servletManager = servletManager;
+    }
+    
+    public void start() throws IOException {
+        ServerSocket serverSocket = new ServerSocket(port);
+        
+        while (true) {
+            Socket socket = serverSocket.accept();
+            es.submit(new HttpRequestHandler(socket, servletManager));
+        }
+    }
+}
+```
+
+```java
+public class ServerMainV5 {
+    
+    private static final int PORT = 12345;
+
+  public static void main(String[] args) throws IOException {
+    ServletManager servletManager = new ServletManager();
+    servletManager.add("/", new HomeServlet());
+    servletManager.add("/site1", new Site1Servlet());
+    
+    HttpServer server = new HttpServer(port, servletManager);
+    server.start();
+  }
+}
+```
+- 먼저 필요한 서블릿(`HttpServlet`)들을 서블릿 매니저에 등록하자. 이 부분이 바로 서비스 개발을 위한 로직들이다.
+- 그리고 `HttpServer`를 생성하면서 서블릿 매니저를 전달하면 된다.
+
+---
+---
+
+### 📚 정리
+- 이제 HTTP 서버와 서비스 개발을 위한 로직이 명확하게 분리되어 있다.
+- 이후에 다른 HTTP 기반의 프로젝트를 시작해야 한다면, HTTP 서버와 관련된 `was.httpserver` 패키지의 코드를 그대로 재사용하면 된다.
+  - 그리고 해당 서비스에 필요한 서블릿을 구현하고, 서블릿 매니저에 등록한 다음에 서버를 실행하면 된다.
+- 여기서 중요한 부분을 새로운 HTTP 서비스(프로젝트)를 만들어도 `was.httpserver` 부분의 코드를 그대로 재사용할 수 있고, 또 전혀 변경하지 않아도 된다는 점이다.
+
+---
+
+## ✅ 웹 애플리케이션 서버의 역사
+- 우리가 만든 `was.httpserver` 패키지를 사용하면 누구나 손쉽게 HTTP 서비스를 개발할 수 있다.
+- 복잡한 네트워크, 멀티스레드, HTTP 메시지 파싱에 대한 부분을 모두 여기서 해결해 준다.
+
+#### 🔍 웹 애플리케이션 서버
+- 실무 개발자가 목표라면, 웹 애플리케이션 서버(Web Application Server), 줄여서 WAS라는 단어를 많이 듣게 될 것이다.
+- Web Server가 아니라 중간에 Application이 들어가는 이유는, 웹 서버의 역할을 하면서 추가로 애플리케이션, 그러니까 프로그램 코드도 수행할 수 있는 서버라는 뜻이다.
+- 여기서 말하는 프로그램의 코드는 우리가 작성한 서블릿 구현체들이다.
+- 우리가 작성한 서버는 HTTP 요청을 처리하는데, 이때 프로그램의 코드를 실행해서 HTTP 요청을 처리한다.
+- 이것이 바로 웹 애플리케이션 서버(WAS)이다.
+
+#### 🔍 서블릿과 웹 애플리케이션 서버
+- 초창기에 회사마다 다른 HTTP 서버를 사용하게 되며, 클래스도 다르고 인터페이스도 모두 달라 HTTP 서버를 변경하게 될 경우 코드를 완전히 다 변경해야 하는 문제점이 있었다.
+- 이런 문제를 해결하기 위해 1990년대 자바 진영에서는 서블릿(Servlet)이라는 표준이 등장하게 된다.
+- 서블릿은 `Servlet`, `HttpServlet`, `ServletRequest`, ServletResponse`를 포함한 많은 표준을 제공한다.
+
+> 서블릿을 제공하는 주요 자바 웹 애플리케이션 서버(WAS)
+> - 오픈 소스
+>   - Apache Tomcat
+>   - Jetty
+>   - GlassFish
+>   - Undertow
+> - 상용
+>   - IBM WebSphere
+>   - Oracle WebLogic
+
+#### 🔍 참고
+- 보통 자바 진영에서 웹 애플리케이션 서버라고 하면 서블릿 기능을 포함하는 서버를 뜻한다.
+- 하지만 서블릿 기능을 포함하지 않아도 프로그램 코드를 수행할 수 있다면 웹 애플리케이션 서버라 할 수 있다.
+
+#### 🔍 표준화의 장점
+- 성능이나 부가 기능이 더 필요해서 상용 WAS로 변경하거나, 또는 다른 오픈소스 WAS로 변경해도 기능 변경 없이 구현한 서블릿들을 그대로 사용 가능.
+- 이것이 바로 표준화의 큰 장점이다.
+  - 개발자는 코드의 변경이 거의 없이 다른 애플리케이션 서버를 선택할 수 있다.
+
+---

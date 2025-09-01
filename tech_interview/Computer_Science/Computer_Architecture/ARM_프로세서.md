@@ -1,7 +1,7 @@
 # 📚 ARM 프로세서
 
 > 📌 공부 날짜: 2025/08/30
-> - `References`: [👶🏻 신입 개발자 전공 지식 & 기술 면접 백과사전 📖](https://gyoogle.dev/blog/)
+> - `References`: [👶🏻 신입 개발자 전공 지식 & 기술 면접 백과사전 📖](https://gyoogle.dev/blog/computer-science/computer-architecture/ARM%20%ED%94%84%EB%A1%9C%EC%84%B8%EC%84%9C.html)
 
 ---
 

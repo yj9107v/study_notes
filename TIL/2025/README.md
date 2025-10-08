@@ -1,8 +1,8 @@
-## 🎉 HELLO 2024!
-<img src="../Image/2024.png" height="250" width="250">
+## 🎉 HELLO 2025!
+<img src="../Image/2025.png" height="250" width="250">
 
 ## 🌿 1분기
-### [3월](month/3월)
+### [1월](month/1월) [2월](month/2월) [3월](month/3월)
 
 ---
 ## ☀️ 2분기
@@ -14,4 +14,4 @@
 
 ---
 ## ☃️ 4분기
-### [10월](month/10월) [11월](month/11월) [12월](month/12월)
+### [10월](month/10월)

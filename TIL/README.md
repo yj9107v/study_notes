@@ -1,4 +1,4 @@
-![img.png](Image/img.png) 
+![img.png](Image/TIL_Image.png) 
 # 🔖 Today I learned
 
 ## [🗓️ 2024](2024)

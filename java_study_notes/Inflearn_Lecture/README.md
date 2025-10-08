@@ -1,10 +1,10 @@
 # 📚인프런 자바 강의를 들으며 공부한 내용
 
 ## ✅References
-- `김영한의 실전 자바` [➡️](https://www.inflearn.com/roadmaps/744)
+- `김영한의 실전 자바` [출처](https://www.inflearn.com/roadmaps/744)
 
 ---
-## 📌 자바 기본편 [➡️](JAVA_BASIC)
+## 📌 자바 [➡️ 기본편](JAVA_BASIC)
 
 - [3장: 객체 지향 프로그래밍](JAVA_BASIC/Chapter3_객체지향프로그래밍.md)
 - [4장: 생성자](JAVA_BASIC/Chapter4_5_생성자_패키지.md)
@@ -18,7 +18,7 @@
 - [12장: 다형성과 설계](JAVA_BASIC/Chapter_12_다형성과설계.md)
 
 ---
-## 📌 자바 중급 1편 [➡️](JAVA_MID1)
+## 📌 자바 [➡️ 중급 1편](JAVA_MID1)
 
 - [1장: Object 클래스](JAVA_MID1/Chapter_1_Object_클래스.md)
 - [2장: 불변 객체](JAVA_MID1/Chapter_2_불변_객체.md)
@@ -30,7 +30,7 @@
 - [9, 10장: 예외 처리](JAVA_MID1/Chapter_9_10_예외처리.md)
 
 ---
-## 📌 자바 중급 2편 [➡️](JAVA_MID2)
+## 📌 자바 [➡️ 중급 2편](JAVA_MID2)
 
 - [1장: 제네릭1 - Generic](JAVA_MID2/Chapter_1_제네릭_Generic_1.md)
 - [2장: 제네릭2 - Generic](JAVA_MID2/Chapter_2_제네릭_Generic_2.md)
@@ -44,7 +44,7 @@
 - [10장: 컬렉션 프레임워크 - 순회, 정렬 전체 정리](JAVA_MID2/Chapter__10_순회_정렬_전체정리.md)
 
 ---
-## 📌 자바 고급 1편 [➡️](JAVA_ADV1)
+## 📌 자바 [➡️ 고급 1편](JAVA_ADV1)
 
 - [1장: 프로세스와 스레드 소개](JAVA_ADV1/Chapter1_프로세스와스레드소개.md)
 - [2장: 스레드 생성과 실행](JAVA_ADV1/Chapter2_스레드생성과실행.md)
@@ -61,7 +61,7 @@
 - [13장: 스레드 풀과 Executor 프레임워크 2](JAVA_ADV1/Chapter13_스레드풀과_Executor프레임워크2.md)
 
 ---
-## 📌 자바 고급 2편 [➡️](JAVA_ADV2)
+## 📌 자바 [➡️ 고급 2편](JAVA_ADV2)
 
 - [1장: 문자 인코딩](JAVA_ADV2/Chapter1_문자_인코딩.md)
 - [2장: IO 기본 1](JAVA_ADV2/Chapter2_IO_기본1.md)
@@ -80,7 +80,7 @@
 
 ---
 
-## 📌 자바 고급 3편 [⭐](JAVA_ADV3)
+## 📌 자바 [➡️ 고급 3편](JAVA_ADV3)
 
 - [1장: 람다가 필요한 이유](JAVA_ADV3/Chapter1_람다가_필요한_이유.md)
 - [2장: 람다](JAVA_ADV3/Chapter2_람다.md)

@@ -80,7 +80,7 @@
 
 ---
 
-## 📌 자바 고급 3편 [➡️](JAVA_ADV3)
+## 📌 자바 고급 3편 [⭐](JAVA_ADV3)
 
 - [1장: 람다가 필요한 이유](JAVA_ADV3/Chapter1_람다가_필요한_이유.md)
 - [2장: 람다](JAVA_ADV3/Chapter2_람다.md)

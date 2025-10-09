@@ -22,6 +22,7 @@
 
 ## 🪪 [자격증 취득 및 관련 정리](/certificates_notes)
 - [정보처리산업기사](/certificates_notes/정보처리산업기사)
+- [SQLD](/certificates_notes/SQLD)
 
 ---
 

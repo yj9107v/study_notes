@@ -13,14 +13,25 @@
 
 ---
 
-## 🎤 [버스킹 프로젝트하며 공부한 내용](/busking_project_notes)
+## 👪 [버스킹 프로젝트하며 공부한 내용](/busking_project_notes)
 - [API 공부](/busking_project_notes/API_notes)
 - [ERD 공부](/busking_project_notes/ERD_notes)
 - [포트폴리오](/busking_project_notes/Portfolio)
 
 ---
 
+## 🪪 [자격증 취득 및 관련 정리](/certificates_notes)
+- [정보처리산업기사](/certificates_notes/정보처리산업기사)
+
+---
+
 ## 🍪 [JAVA Study](/java_study_notes)
 - [자바 인프런 강의 공부한 내용](/java_study_notes/Inflearn_Lecture)
+
+---
+
+## 🎤 [기술 면접 관련 정리](/tech_interview)
+- [CS 지식](/tech_interview/Computer_Science)
+
 
 ---

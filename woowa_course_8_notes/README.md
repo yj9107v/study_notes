@@ -1,4 +1,5 @@
 # 📖 우테코 8기 오픈 미션 하며 학습한 내용
+- [우테코 8기 오픈 미션 총 정리 (노션 링크)](https://www.notion.so/Woowa-Course-8-2b5c62df7f5a802b91ccd1f891351b3d?source=copy_link)
 
 ---
 

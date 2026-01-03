@@ -6,6 +6,9 @@
 ---
 ## 📌 자바 [➡️ 기본편](JAVA_BASIC)
 
+<details>
+<summary>자바 기본편 1~12장</summary>
+
 - [3장: 객체 지향 프로그래밍](JAVA_BASIC/Chapter3_객체지향프로그래밍.md)
 - [4장: 생성자](JAVA_BASIC/Chapter4_5_생성자_패키지.md)
 - [5장: 패키지](JAVA_BASIC/Chapter4_5_생성자_패키지.md)
@@ -17,8 +20,13 @@
 - [11장: 다형성2](JAVA_BASIC/Chapter_11_다형성2.md)
 - [12장: 다형성과 설계](JAVA_BASIC/Chapter_12_다형성과설계.md)
 
+</details>
+
 ---
 ## 📌 자바 [➡️ 중급 1편](JAVA_MID1)
+
+<details>
+<summary>자바 중급 1편 1~10장</summary>
 
 - [1장: Object 클래스](JAVA_MID1/Chapter_1_Object_클래스.md)
 - [2장: 불변 객체](JAVA_MID1/Chapter_2_불변_객체.md)
@@ -29,8 +37,13 @@
 - [7, 8장: 중첩 클래스 & 내부 클래스](JAVA_MID1/Chapter_7_8_중첩_내부_클래스.md)
 - [9, 10장: 예외 처리](JAVA_MID1/Chapter_9_10_예외처리.md)
 
+</details>
+
 ---
 ## 📌 자바 [➡️ 중급 2편](JAVA_MID2)
+
+<details>
+<summary>자바 중급 2편 1~10장</summary>
 
 - [1장: 제네릭1 - Generic](JAVA_MID2/Chapter_1_제네릭_Generic_1.md)
 - [2장: 제네릭2 - Generic](JAVA_MID2/Chapter_2_제네릭_Generic_2.md)
@@ -43,8 +56,13 @@
 - [9장: 컬렉션 프레임워크 - Map, Stack, Queue](JAVA_MID2/Chapter_9_Map_Stack_Queue_컬렉션_프레임워크.md)
 - [10장: 컬렉션 프레임워크 - 순회, 정렬 전체 정리](JAVA_MID2/Chapter__10_순회_정렬_전체정리.md)
 
+</details>
+
 ---
 ## 📌 자바 [➡️ 고급 1편](JAVA_ADV1)
+
+<details>
+<summary>자바 고급 1편 1~13장</summary>
 
 - [1장: 프로세스와 스레드 소개](JAVA_ADV1/Chapter1_프로세스와스레드소개.md)
 - [2장: 스레드 생성과 실행](JAVA_ADV1/Chapter2_스레드생성과실행.md)
@@ -60,8 +78,13 @@
 - [12장: 스레드 풀과 Executor 프레임워크 1](JAVA_ADV1/Chapter12_스레드풀과_Executor프레임워크1.md)
 - [13장: 스레드 풀과 Executor 프레임워크 2](JAVA_ADV1/Chapter13_스레드풀과_Executor프레임워크2.md)
 
+</details>
+
 ---
 ## 📌 자바 [➡️ 고급 2편](JAVA_ADV2)
+
+<details>
+<summary>자바 고급 2편 1~14장</summary>
 
 - [1장: 문자 인코딩](JAVA_ADV2/Chapter1_문자_인코딩.md)
 - [2장: IO 기본 1](JAVA_ADV2/Chapter2_IO_기본1.md)
@@ -78,10 +101,19 @@
 - [13장: 애노테이션](JAVA_ADV2/Chapter13_애노테이션.md)
 - [14장: HTTP 서버 활용](JAVA_ADV2/Chapter14_HTTP_서버활용.md)
 
+</details>
+
 ---
 
 ## 📌 자바 [➡️ 고급 3편](JAVA_ADV3)
 
+<details>
+<summary>자바 고급 3편</summary>
+
 - [1장: 람다가 필요한 이유](JAVA_ADV3/Chapter1_람다가_필요한_이유.md)
 - [2장: 람다](JAVA_ADV3/Chapter2_람다.md)
 - [3장: 함수형 인터페이스](JAVA_ADV3/Chapter3_함수형_인터페이스.md)
+
+</details>
+
+---
